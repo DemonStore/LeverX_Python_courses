@@ -1,74 +1,24 @@
 import models
 import utils
 
-print('Enter the name of the file with rooms (e.g. rooms.json)')
-room_input = input()
-print('Enter the name of the file with students (e.g. students.json)')
-students_input = input()
-your_rooms = utils.read_rooms(room_input)
-your_students = utils.read_students(students_input)
+arguments = utils.parsing()
 
-dict_of_rooms = dict()
-list_of_students = []
-dict_find_students = dict()
+your_rooms = utils.read_file(arguments.rooms)
+your_students = utils.read_file(arguments.students)
 
-if len(your_students) >= len(your_rooms):
-    min_your_students = your_students[:len(your_rooms)]
-    max_your_students = your_students[len(your_rooms):len(your_students)]
-    del your_students
-    
-    for room, student in zip(your_rooms, min_your_students):
-        new_room = models.Room(room['id'], room['name'])
-        dict_of_rooms[room['id']] = {
-            'id': new_room.room_pk,
-            'name': new_room.room_name,
-            'students': new_room.students
-        }
-        new_student = models.Student(student['id'], student['name'], student['room'])
-        dict_find_students[new_student.student_name] = new_student
-        current_stud_room = student['room']
-        if current_stud_room in dict_of_rooms:
-            room_add_student = dict_of_rooms.get(current_stud_room)
-            room_add_student['students'].append(new_student.student_name)
-        else:
-            list_of_students.append(student)
-
-    del min_your_students
-    max_your_students += list_of_students
-    del list_of_students
-    
-    for student in max_your_students:
-        new_student = models.Student(student['id'], student['name'], student['room'])
-        dict_find_students[new_student.student_name] = new_student
-        current_stud_room = student['room']
-        if current_stud_room in dict_of_rooms:
-            room_add_student = dict_of_rooms.get(current_stud_room)
-            room_add_student['students'].append(new_student.student_name)
-    del max_your_students
+information = models.RoomAndStudentDictinary(your_rooms, your_students)
+dict_for_file = information.rooms_merged_dict()
+dict_for_students = information.find_students_dict
+if arguments.format == 'json':
+    utils.WriteMergedFile(
+            arguments.new_file_name,
+            dict_for_file).write_merged_json()
+elif arguments.format == 'xml':
+    utils.WriteMergedFile(
+        arguments.new_file_name,
+        dict_for_file).write_merged_xml()
 else:
-    for index in range(len(your_rooms)):
-        new_room = models.Room(your_rooms[index]['id'], your_rooms[index]['name'])
-        dict_of_rooms[your_rooms[index]['id']] = {
-            'id': new_room.room_pk,
-            'name': new_room.room_name,
-            'students': new_room.students
-        }
-        if index < len(your_students):
-            current_stud_room = your_students[index]['room']
-            new_student = models.Student(your_students[index]['id'], your_students[index]['name'], current_stud_room)
-            dict_find_students[new_student.student_name] = new_student
-            if current_stud_room in dict_of_rooms:
-                room_add_student = dict_of_rooms.get(current_stud_room)
-                room_add_student['students'].append(new_student.student_name)
-            else:
-                list_of_students.append(new_student)
-    for student in list_of_students:
-        current_stud_room = student.student_room
-        if current_stud_room in dict_of_rooms:
-            room_add_student = dict_of_rooms.get(current_stud_room)
-            room_add_student['students'].append(student.student_name)
-
-utils.write_merge('format', dict_of_rooms)
+    print(r'You have to choose between "json" and "xml"')
 
 find_to = False
 while find_to != 'q':
@@ -77,6 +27,6 @@ while find_to != 'q':
     print(r'For exit - press "q"')
     find_to = str(input())
     if find_to == 'r':
-        utils.find_room(dict_of_rooms)
+        utils.Find().find_room(dict_for_file)
     if find_to == 's':
-        utils.find_student(dict_find_students)
+        utils.Find().find_student(dict_for_students)

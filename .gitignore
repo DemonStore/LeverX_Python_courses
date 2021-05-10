@@ -145,3 +145,7 @@ format.json
 
 # text for commits
 texts_for_commits.txt
+
+# learn argparse and xml
+parser_test.py
+xml_test.py

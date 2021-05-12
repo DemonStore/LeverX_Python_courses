@@ -146,6 +146,8 @@ format.json
 # text for commits
 texts_for_commits.txt
 
-# learn argparse and xml
+# learn argparse, xml, assert, task_2.py - исходник
 parser_test.py
 xml_test.py
+traning_assert.py
+task_2.py
